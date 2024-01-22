@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.dao.RentalDAO">
+	
+	
+	<!-- 전체 rental 리스트 -->
+	<select id="getRentalList">
+		SELECT * FROM tb_rental rent
+			JOIN tb_car car
+			    ON rent.car_idx = car.car_idx
+			JOIN tb_carinfo info
+				ON car.carInfo_idx = info.carInfo_idx
+			WHERE YEAR(rentalDate) = YEAR(NOW())
+					AND MONTH(rentalDate) = MONTH(NOW())
+	</select>
+
+	<!-- 연월별 rental List -->
+	<select id="rentListMonth" parameterType="map">
+		SELECT * FROM tb_rental rent
+			JOIN tb_car car
+			    ON rent.car_idx = car.car_idx
+			JOIN tb_carinfo info
+				ON car.carInfo_idx = info.carInfo_idx
+			WHERE YEAR(rentalDate) = #{year}
+			<if test="month != null">
+				AND MONTH(rentalDate) = #{month}
+			</if>
+	</select>
+
+	<!-- 이번달 총 매출 -->
+	<select id="income" parameterType="map" resultType="int">
+		SELECT SUM(cost) FROM tb_rental
+			<if test="type == 'year'">
+				WHERE YEAR(rentalDate) = #{year}
+				GROUP BY YEAR(rentalDate)
+			</if>
+			<if test="type == 'month'">
+				WHERE YEAR(rentalDate) = #{year}
+					AND MONTH(rentalDate) = #{month}
+				GROUP BY MONTH(rentalDate)
+			</if>
+	</select>
+	
+	<!-- 연단위 월별 매출 (차트)-->
+	<select id="incomeList">
+		SELECT
+			MONTH(tb_rental.rentalDate) month,
+			SUM(tb_rental.cost) cost
+		FROM
+			tb_rental
+		GROUP BY MONTH(rentalDate)
+	</select>
+	
+	<insert id="rentalInsert" parameterType="map">
+	INSERT INTO tb_rental
+		(car_idx, id, rentalDate, dueDate, cost)
+			VALUES(#{car_idx}, #{memberID}, #{rentalDate}, #{dueDate}, #{totalCost})
+	</insert>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

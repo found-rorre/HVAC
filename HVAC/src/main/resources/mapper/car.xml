@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.dao.CarDAO">
+
+	<!-- 상태 갯수 조회 -->
+	<select id="statusCount" resultType="hashmap">
+		SELECT tb_car.status, COUNT(status) count FROM tb_car
+			GROUP BY STATUS
+	</select>
+	
+	<select id="getTypeList">
+		SELECT DISTINCT info.type
+			FROM tb_carinfo info
+			ORDER BY info.type
+	</select>
+	
+	<select id="getMakerList">
+		SELECT DISTINCT info.maker
+			FROM tb_carinfo info
+			ORDER BY info.maker
+	</select>
+	
+	<!-- 메인 검색 요청 -->
+	<select id="mainSearchCar" parameterType="com.spring.dto.CarParam" resultType="com.spring.dto.CarDTO">
+		SELECT * FROM tb_car car
+		    INNER JOIN tb_carinfo info
+		    	ON car.carInfo_idx = info.carInfo_idx
+		    		WHERE status = '입고'
+	    	<!-- 연료 -->
+	    	<if test="fuel != null and fuel.size() > 0">
+		    	and fuel IN 
+				<foreach collection="fuel" item="item" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+	    	</if>
+	    	<!-- 차종 -->
+	    	<if test="type != null and type.size() > 0">
+		    	and type IN
+				<foreach collection="type" item="item" separator="," open="(" close=")">
+					#{item}
+				</foreach>
+	    	</if>
+	    	<if test="seatCount != null">
+			    <choose>
+			        <when test="seatCount[0] == '5인승이하'">
+			            <![CDATA[and seatCount <= 5]]>
+			        </when>
+			        <when test="seatCount[0] == '5인승초과'">
+			            <![CDATA[and seatCount > 5]]>
+			        </when>
+			        <!-- 다른 조건에 대한 처리 -->
+			    </choose>
+			</if>
+			GROUP BY car.carinfo_idx
+			ORDER BY info.maker, info.model
+	</select>
+	
+	<!-- 키워드 별 차량 검색 -->
+	<select id="keywordSearch" parameterType="String">
+		SELECT * FROM tb_car car
+		    JOIN tb_carinfo info
+				ON car.carinfo_idx = info.carinfo_idx
+		    JOIN tb_carkeyword mm
+				ON mm.carinfo_idx = info.carinfo_idx
+		    JOIN tb_keyword keyword
+				ON keyword.keyword_idx = mm.keyword_idx
+	    	WHERE keyword.name= #{keyword}
+	    		AND car.status = '입고'
+	</select>
+	
+	
+	<!-- 선택된 Carinfo 1건 조회하기 -->
+	<select id="getSelectedCarinfo" parameterType="int" resultType="com.spring.dto.CarInfoDTO">
+		SELECT AA.* FROM
+			(SELECT
+			    @rnum := @rnum + 1 idx, info.* 
+			FROM
+			    tb_carinfo info, (SELECT @rnum := 0) idx
+			 ) AA   
+		WHERE AA.idx = #{idx}
+	</select>
+	
+	
+	<!-- 모든 info 정보 가져오기 -->
+	<select id="getCarInfo" resultType="com.spring.dto.CarInfoDTO">
+		SELECT * FROM tb_carinfo
+	</select>
+	
+
+	<!-- 모든 차 정보 가져오기 -->
+	<select id="getlist" resultType="com.spring.dto.CarDTO">
+		SELECT car.*, info.*, sub.rentalCount FROM tb_car car
+			JOIN tb_carinfo info
+				ON car.carInfo_idx = info.carInfo_idx
+			LEFT JOIN (
+					SELECT car_idx, COUNT(*) rentalCount FROM tb_rental
+						GROUP  BY car_idx
+					) sub
+				ON car.car_idx = sub.car_idx
+			ORDER BY info.carInfo_idx,car.car_idx DESC
+	</select>
+	
+	<!-- car_idx로 차 정보 1건 가져오기 -->
+	<select id="selectByCarIdx" resultType="com.spring.dto.CarDTO">
+		SELECT * FROM tb_car
+		    INNER JOIN tb_carinfo
+				ON tb_car.carInfo_idx = tb_carinfo.carInfo_idx
+		    WHERE car_idx = #{car_idx}
+	</select>
+	
+	<!-- info insert -->
+	<insert id="carinfoInsert" parameterType="com.spring.dto.CarInfoDTO">
+		INSERT INTO tb_carinfo
+			(maker, model, series, type, transmission, fuel, fuelRatio, image, seatCount)
+					VALUES(#{maker}, #{model}, #{series}, #{type}, #{transmission}, #{fuel}, #{fuelRatio}, #{image}, #{seatCount})
+	</insert>
+	
+	<!-- car insert -->
+	<insert id="carInsert" parameterType="com.spring.dto.CarDTO">
+		INSERT INTO tb_car (carInfo_idx, carNumber, year, dayCost, status)
+			VALUES(#{carInfo_idx}, #{carNumber}, #{year}, #{dayCost}, '입고')
+	</insert>
+
+	<!-- 차량 상태 업데이트 -->
+	<update id="carUpdate">
+		UPDATE tb_car
+			SET status = #{status}
+			WHERE car_idx = #{car_idx}
+	</update>
+   <!-- 차량 상태 업데이트 -->
+   <update id="adminCarUpdate" parameterType="java.util.HashMap">
+      UPDATE tb_car
+         SET status = #{status}
+         WHERE car_idx IN
+         <foreach collection="car_idx" item="item" separator="," open="(" close=")">
+            #{item}
+         </foreach>
+   </update>
+	
+	<!-- 차 정보 삭제 -->
+	<delete id="carDelete" parameterType="java.util.HashMap">
+		DELETE  FROM tb_car
+			WHERE car_idx IN
+			
+			<foreach collection="car_idx" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+	</delete>
+	
+	<!-- info 정보 삭제 -->
+	<delete id="carInfoDelete" parameterType="int">
+		DELETE  FROM tb_carInfo
+			WHERE carInfo_idx = #{carInfo_idx}
+	</delete>
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

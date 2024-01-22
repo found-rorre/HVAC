@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.dao.repleDAO">
+	
+	<!-- 문의글을 저장한다. -->
+	<insert id="repleInsert" parameterType="com.spring.dto.repleDTO">
+		INSERT INTO tb_reple
+		(idx, answer, adminid, adminname, reple, regdate, updatedate)
+		VALUES(#{idx}, #{answer}, #{adminid}, #{adminname}, #{reple}, now(), now())
+	</insert>
+	
+	<!-- 문의글을 존재 유무를 파악하기 위해 얻어온다. -->
+	<select id="repleExist" parameterType="com.spring.dto.repleDTO" resultType="com.spring.dto.repleDTO">
+		select * from tb_reple where idx = #{idx}
+	</select>
+	
+	<!-- 문의글을 변경한다. -->
+	<update id="repleUpdate" parameterType="com.spring.dto.repleDTO">
+		UPDATE tb_reple
+		SET answer=#{answer}, reple=#{reple}, updatedate=now()
+		WHERE idx=#{idx}
+	</update>
+	
+	
+	<select id="repleSelect" parameterType="int" resultType="com.spring.dto.repleDTO">
+		select * from tb_reple where idx = #{idx}
+	</select>
+	
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

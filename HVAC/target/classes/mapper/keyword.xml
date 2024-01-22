@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.dao.KeywordDAO">
+	
+	
+	<!-- 차량에 키워드 등록 ( mapping table insert ) -->
+	<insert id="carkeywordInsert" parameterType="hashmap">
+		INSERT INTO tb_carkeyword(carinfo_idx, keyword_idx)
+			VALUES
+			<foreach collection="name" item="item" separator=",">
+				
+				(#{carinfo_idx} , (SELECT keyword_idx FROM tb_keyword WHERE NAME = #{item}))
+			
+			</foreach>
+	</insert>
+	
+	<!-- 키워드 생성 -->
+	<insert id="keywordInsert">
+		INSERT INTO tb_keyword(name, title)
+			VALUES(#{name}, #{title})
+	</insert>
+	<update id="keywordUpdate">
+		UPDATE tb_keyword
+			SET name = #{name}, 
+				title = #{title} 
+			WHERE keyword_idx = #{keyword_idx}
+	</update>
+	
+	<!-- 키워드 삭제 -->
+	<delete id="keywordDelete" parameterType="java.util.HashMap">
+		DELETE  FROM tb_keyword
+			WHERE keyword_idx IN
+			
+			<foreach collection="keyword_idx" item="item" separator="," open="(" close=")">
+				#{item}
+			</foreach>
+	</delete>
+	
+	<select id="getkeywordList">
+		SELECT * FROM tb_keyword
+	</select>
+	
+	<select id="keywordOpstion">
+		select name from tb_keyword
+	</select>
+	
+	<select id="getkeywordCarList" parameterType="String" resultType="com.spring.dto.CarDTO">
+		SELECT * FROM tb_car car
+		    JOIN tb_carinfo info
+				ON car.carinfo_idx = info.carinfo_idx
+		    JOIN tb_carkeyword mm
+				ON mm.carinfo_idx = info.carinfo_idx
+		    JOIN tb_keyword keyword
+				ON keyword.keyword_idx = mm.keyword_idx
+
+		<if test="name != null">
+			
+		    WHERE keyword.name=#{name}
+		    
+		</if>
+		
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

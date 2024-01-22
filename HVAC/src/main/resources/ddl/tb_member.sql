@@ -1,0 +1,23 @@
+-- test.tb_member definition
+
+CREATE TABLE practice.`tb_member` (
+  `idx` INT(11) NOT NULL AUTO_INCREMENT,
+  `id` VARCHAR(20) DEFAULT NULL,
+  `name` VARCHAR(20) DEFAULT NULL,
+  `password` VARCHAR(20) DEFAULT NULL,
+  `jumin1` VARCHAR(6) DEFAULT NULL,
+  `jumin2` VARCHAR(7) DEFAULT NULL,
+  `postcode` VARCHAR(5) DEFAULT NULL,
+  `addr1` VARCHAR(100) DEFAULT NULL,
+  `addr2` VARCHAR(100) DEFAULT NULL,
+  `email1` VARCHAR(100) DEFAULT NULL,
+  `email2` VARCHAR(100) DEFAULT NULL,
+  `phone` VARCHAR(11) DEFAULT NULL,
+  `useYN` CHAR(1) DEFAULT 'Y', -- 아이디 사용 참거짓 분별 
+  `regdate` DATE DEFAULT NULL,
+  `updatedate` DATE DEFAULT NULL,
+  PRIMARY KEY (`idx`)
+) ENGINE=INNODB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+
+
+
