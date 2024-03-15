@@ -15,16 +15,32 @@
 	</select>
 
 	<!-- 연월별 rental List -->
-	<select id="rentListMonth" parameterType="map">
-		SELECT * FROM tb_rental rent
-			JOIN tb_car car
-			    ON rent.car_idx = car.car_idx
-			JOIN tb_carinfo info
-				ON car.carInfo_idx = info.carInfo_idx
-			WHERE YEAR(rentalDate) = #{year}
-			<if test="month != null">
-				AND MONTH(rentalDate) = #{month}
+	<select id="rentListMonth" parameterType="map" resultType="map">
+		SELECT
+			SUB.*,
+			carNumber, rentalDate, dueDate, dayCost, cost
+		FROM
+		    tb_rental rental
+		JOIN
+		    tb_car car USING (car_idx)
+		JOIN (	SELECT
+					carInfo_idx, model, series, maker, type
+		    	FROM
+		        	tb_carinfo
+		    	WHERE
+					1 = 1
+			<if test="maker != 'all'">
+				AND maker = #{maker}
 			</if>
+			<if test="type != 'all'">
+		        AND type = #{type}
+			</if>
+		        ) AS SUB USING (carInfo_idx)
+		WHERE
+			YEAR(rentalDate) = #{year}
+   		<if test="month != null">
+      		AND MONTH(rentalDate) = #{month}
+		</if>
 	</select>
 
 	<!-- 이번달 총 매출 -->
@@ -41,14 +57,17 @@
 			</if>
 	</select>
 	
-	<!-- 연단위 월별 매출 (차트)-->
+	<!-- 이번년도 월별 매출 (차트)-->
 	<select id="incomeList">
 		SELECT
 			MONTH(tb_rental.rentalDate) month,
 			SUM(tb_rental.cost) cost
 		FROM
 			tb_rental
-		GROUP BY MONTH(rentalDate)
+		WHERE
+			YEAR(rentalDate) = YEAR(NOW())
+		GROUP BY
+			MONTH(rentalDate)
 	</select>
 	
 	<insert id="rentalInsert" parameterType="map">

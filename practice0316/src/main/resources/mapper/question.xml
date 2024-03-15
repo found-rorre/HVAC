@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.dao.questionDAO">
+	
+	<!-- 문의글을 저장한다. -->
+	<insert id="questionInsert" parameterType="com.spring.dto.questionDTO">
+		INSERT INTO tb_question
+		(type, title, contents, userid, answer, regdate, updatedate)
+		VALUES(#{type}, #{title}, #{contents}, #{userid}, #{answer}, now(), now())
+	</insert>
+	
+	<!-- 1페이지 분량의 문의글을 얻어온다. -->
+	<select id="questionList" parameterType="com.spring.dto.questionDTO" resultType="com.spring.dto.questionDTO">
+		select * from tb_question where userid = #{userid} order by idx desc limit #{currentPage}, 10
+	</select>
+	
+	<select id="questionCount" parameterType="com.spring.dto.questionDTO" resultType="int">
+		select count(*) from tb_question where userid = #{userid}
+	</select>
+	
+	<!-- 문의글을 삭제한다. -->
+	<delete id="questionDelete" parameterType="java.util.ArrayList">
+		DELETE FROM tb_question where idx in
+		<foreach collection="array" item="item" index="index"
+			separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	
+	<!-- 관리자 페이지에서 1페이지 분량의 문의글을 얻어온다. -->
+	<select id="adminQuestionList" parameterType="com.spring.dto.questionDTO" resultType="com.spring.dto.questionDTO">
+		
+		select A.*, B.name, B.phone, concat(B.email1, '@', B.email2) email 
+			from tb_question A inner join tb_member B 
+			on A.userid=B.id 
+			where 1=1
+		
+		<if test="type == '예약' or type == '불만' or type == '기타'">
+			and type = #{type}
+		</if>
+		
+		<if test="title != null and title !=''">
+			and title like concat('%',#{title},'%')
+		</if>
+		
+		<if test="userid != null and userid !=''">
+			and userid = #{userid}
+		</if>
+		
+		<if test="answer == '미확인' or answer == '처리중' or answer == '답변완료'">
+			and answer=#{answer}
+		</if>
+		order by idx desc limit #{currentPage}, 10
+	</select>
+	
+	<select id="adminQuestionCount" parameterType="com.spring.dto.memberDTO" resultType="int">
+		
+		select count(*) from tb_question where 1=1
+		
+		
+		<if test="type == '예약' or type == '불만' or type == '기타'">
+			and type = #{type}
+		</if>
+		
+		<if test="title != null and title !=''">
+			and title like concat('%',#{title},'%')
+		</if>
+		
+		<if test="userid != null and userid !=''">
+			and userid = #{userid}
+		</if>
+		
+		<if test="answer == '미확인' or answer == '처리중' or answer == '답변완료'">
+			and answer=#{answer}
+		</if>
+		
+	</select>
+	
+	<update id="questionUpdate" parameterType="com.spring.dto.questionDTO">
+		UPDATE tb_question
+		SET answer=#{answer}, updatedate=now()
+		WHERE idx=#{idx}
+	</update>
+	
+	
+	<!-- 승환이의 선물 -->
+	<delete id="deleteQuestion" parameterType="java.util.ArrayList">
+		DELETE FROM tb_question where idx in
+		<foreach collection="array" item="item" index="index"
+			separator="," open="(" close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<!-- 메일 전송에 필요한 내용을 얻어온다. -->
+	<select id="questionSelect" parameterType="com.spring.dto.questionDTO" resultType="com.spring.dto.questionDTO">
+		
+		select A.*, B.name, B.phone, concat(B.email1, '@', B.email2) email 
+			from tb_question A inner join tb_member B 
+			on A.userid=B.id
+			WHERE A.idx=#{idx}
+		
+	</select>
+	
+	<!-- 미확인, 처리중인 문의사항 갯수 ( main ) -->
+	<select id="unfinishedCount" resultType="int">
+		SELECT COUNT(*) FROM tb_question
+			WHERE answer IN ('미확인', '처리중')
+	</select>
+	
+	
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
